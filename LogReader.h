@@ -2,15 +2,15 @@
 #define INCLUDE_LOGREADER
 
 #include <LogStruct.h>
-#include <QueueManager.h>
+#include <StackManager.h>
 
 class LogReader
 {
     public:
-	LogReader(QueueManager<LogStruct>* qm);
+	LogReader(StackManager<LogStruct>* sm);
 	LogStruct get(); //blocking call
     private:
-	QueueManager<LogStruct>* qm_;
+	StackManager<LogStruct>* sm_;
 
 };
 #endif

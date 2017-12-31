@@ -2,8 +2,8 @@
 
 LogStruct LogReader::get()
 {
-    return qm_->dequeue();
+    return sm_->dequeue();
 }
 
-LogReader::LogReader(QueueManager<LogStruct>* qm)
-    :qm_(qm) {}
+LogReader::LogReader(StackManager<LogStruct>* sm)
+    :sm_(sm) {}

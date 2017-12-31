@@ -1,16 +1,24 @@
 #include <Logger.h>
 
-Logger::Logger(QueueManager<LogStruct> *qm, const std::string& class_name)
-    :qm_(qm), class_name_(class_name) {}
+Logger::Logger(StackManager<LogStruct> *sm, const std::string& class_name)
+    :sm_(sm), class_name_(class_name) {}
     void Logger::setPriority(int p) {
 	priority_ = p;
     }
+Logger::~Logger()
+{
+    //publish any partial log that the caller did not publish.
+    if(!logStruct_.log.empty()) {
+	logPublish();
+    }
+}
 int Logger::getPriority()
 {
     return priority_;
 }
 void Logger::logAppend(const std::string &str)
 {
+    std::lock_guard<std::mutex> lock(log_mtx_);
     logStruct_.log += str;
 }
 
@@ -24,9 +32,10 @@ void Logger::decorateInfo(LogStruct &logStruct)
 
 void Logger::logPublish()
 {
+    std::lock_guard<std::mutex> lock(log_mtx_);
     decorateInfo(logStruct_);
-    qm_->enqueue(logStruct_, priority_-1);
-    logStruct_.log = "";
+    sm_->enqueue(logStruct_, priority_-1);
+    logStruct_.log.clear();
 }
 void Logger::log(const std::string &str)
 {
@@ -40,5 +49,5 @@ void Logger::log(int p, const std::string &str)
     decorateInfo(logStruct);
     logStruct.priority = p;
     logStruct.log = str;
-    qm_->enqueue(logStruct, p-1);
+    sm_->enqueue(logStruct, p-1);
 }
